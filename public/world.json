@@ -1,0 +1,32 @@
+{
+    "last_id": 2,
+    "deafault_room": "hall",
+    "rooms": 
+    {
+        "hall": {
+            "id": 0,
+            "name": "hall",
+            "url": "background.png",
+            "offset": [0, 0],
+            "people": [],
+            "range": [-100,100],
+            "exits": [
+                {
+                    "target": "street",
+                    "position": 80
+                }
+            ],
+            "items": []
+        },
+        "street": {
+            "id": 1,
+            "name": "street",
+            "url": "background2.png",
+            "offset": [0, -70],
+            "people": [],
+            "range": [-100, 100],
+            "exits": [],
+            "items": []
+        }
+    }
+}
