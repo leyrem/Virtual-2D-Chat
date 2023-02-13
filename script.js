@@ -152,13 +152,21 @@ const MYCHAT = {
     MYCHAT.mapNamewithIRev.set(userName, userID);
     MYCHAT.sendSysMsg('User ' + userID + ' with user name: ' + userName + ',  connected!', userID, MYCHAT.currentTime());
     MYCHAT.addUserInForm(userName);
+
+    var new_user = new User("Leyre");
+    new_user.id = userID;
+    //MYAPP.current_room.addUser(new_user);
+    WORLD.addUser(new_user, MYAPP.current_room);
+
   },
   onUserDisconnect: function(userID, userName)
   {
     MYCHAT.mapNamewithIRev.delete(userName);
     MYCHAT.sendSysMsg('User ' + userID + " with user name: " +  userName + " disconnected!", userID, MYCHAT.currentTime());
-    MYCHAT.deleteUserFromForm(userName);
+    //MYCHAT.deleteUserFromForm(userName);
+    WORLD.removeUser(WORLD.getUserById(userID));
   },
+
   onNewMessageReceived: function(authorID, msgStr)
   {
     MYCHAT.displayMessage(JSON.parse(msgStr));

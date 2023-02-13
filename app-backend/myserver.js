@@ -82,6 +82,9 @@ var MYSERVER = {
 		// room.addUser(user);
 		// conn.user = user; // Store the user class instace object in the connection websocket
 		// //user._connection = conn;
+		// Iterate through room.people and send the login to the people stored there.
+		// Send the characteristics of the room to the clieny too --> check video
+		// The client will call WORLD.createRoom when joining a new room with the data the server sends him
 
         // send room info
 		this.sendRoomInfo(conn);

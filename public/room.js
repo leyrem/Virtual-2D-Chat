@@ -86,6 +86,12 @@ var WORLD = {
         room.addUser(user);
     },
 
+    changeRoom: function ( user, new_room ) {
+        this.removeUser(user);
+        user.room = new_room;
+        new_room.addUser(user);
+    },
+
     removeUser: function( user )
     {
         var room = this.getRoom(user.room);

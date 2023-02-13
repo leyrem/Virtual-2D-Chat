@@ -160,9 +160,11 @@ var MYAPP = {
                                 
                                 var new_room = WORLD.getRoom(exit.target);
                                 this.my_user.room = exit.target;
-                                new_room.people.push(this.my_user.name);
-                                this.current_room = new_room;
+                                //new_room.people.push(this.my_user.name);
                                 
+                                WORLD.changeRoom(this.my_user, new_room);
+                                MYCLIENT.changeRoom(new_room.name);
+                                this.current_room = new_room;
                                 
                             }
                         }
