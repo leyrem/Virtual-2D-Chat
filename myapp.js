@@ -187,8 +187,8 @@ var MYAPP = {
             var exit = this.current_room.exits[i];
             if(localmouse[0]>exit.position){
                 if(localmouse[0]<exit.position+exit.width){
-                    if(localmouse[1]>40){//change the hardcode to datacode
-                        if(localmouse[1]<100){
+                    if(localmouse[1]>20){//change the hardcode to datacode
+                        if(localmouse[1]<80){
                             cursor_exit = exit;
                             
                         }
