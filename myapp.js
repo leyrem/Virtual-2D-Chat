@@ -23,7 +23,7 @@ var MYAPP = {
         this.current_room.exits.push({
             target: "oasis",
             position: 80,
-            width: 30
+            width: 100
         });
 
         WORLD.addUser(this.my_user, this.current_room);
@@ -77,10 +77,14 @@ var MYAPP = {
         if(img){
             ctx.drawImage(img,-img.width * scale/2, -img.height * scale/2, img.width*scale, img.height*scale);
             
+            var doorImg = getImage("doorSpritesheet.png");
+            
             for(var i = 0; i<room.exits.length;++i){
                 var exit = room.exits[i];
                 ctx.fillStyle = "red";
-                ctx.fillRect(exit.position,40,exit.width,60);
+                var verticalOutput = 0;
+                if(room.exits[i].target==this.my_user.next_room) verticalOutput = doorImg.height/2;
+                ctx.drawImage(doorImg, 0, verticalOutput, doorImg.width, doorImg.height/2, exit.position,20,exit.width,60);
             }
 
             //draw room users
