@@ -180,6 +180,11 @@ var MYCLIENT = { // THS IS THE CLIENT
                     room.addUser(user);
                 }
             }
+        }else if(type == "movement")
+        {
+            var user = WORLD.getUserById(msg.user_id);
+            WORLD.users[user.name].target = [msg.data,msg.data]; 
+
         }
     },
     sendMessage: function( msg ) // Sends a message to all clients in the room
