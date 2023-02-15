@@ -4,3 +4,11 @@ Quan el cursor estigui sobre una porta (canviar el cursor a pointer//done) i can
 Afegir el canvas al assignment 1 en el lloc on surtien el roomchat.
 Fer que quan envies un msg es mostra una bombolla de text.
 Fer que quan cliques una exit el jugador té com a exit target aquella exit i quan arribi a la seva exit target canvia a la sala de la exit.//done
+
+
+// TODO
+- el estado de los dos clientes no es el mismo --> probad send room state on onTick
+- passwords
+- guardar la posicion
+- burbujas
+- distancia

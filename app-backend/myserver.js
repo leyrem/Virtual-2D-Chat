@@ -125,19 +125,17 @@ var MYSERVER = {
         console.log("User disconnected");
         console.log('[server] Close socket of user_id: ' + conn.user_id);
 
-        if(this.clientIDtoUsername.has(conn.user_id.toString()))
-				this.sendToRoom(conn.room_name, conn.user_id.toString(), true, "LOGOUT", conn.user_id.toString(), null);
-			else
-				this.sendToRoom(conn.room_name, conn.user_id.toString(), true, "LOGOUT", conn.user_id.toString(), null);
+		this.sendToRoom(conn.room_name, conn.user_id.toString(), true, "LOGOUT", conn.user_id.toString(), null);
 	
-			var room = this.rooms[conn.room_name];
-			if(room)
-			{
-				delete room.clients[conn.user_id];
-				if(Object.keys(room.clients).length == 0)
-					delete this.rooms[conn.room_name];
-			}
-			delete this.clients[conn.user_id];
+		var room = this.rooms[conn.room_name];
+		if(room)
+		{
+			delete room.clients[conn.user_id];
+			if(Object.keys(room.clients).length == 0)
+				delete this.rooms[conn.room_name];
+		}
+		delete this.clients[conn.user_id];
+		WORLD.removeUser(conn.user);
 
     },
 
