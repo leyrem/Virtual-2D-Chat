@@ -161,6 +161,9 @@ const MYCHAT = {
   {
     for (var i = 0; i < room_info.clients.length; i++ ) {
       if(room_info.clients[i].user_id != MYCHAT.myUserID) {
+        var new_user = new User(room_info.clients[i].user_name);
+        new_user.id = room_info.clients[i].user_id;
+        WORLD.addUser(new_user, MYAPP.current_room);
         MYCHAT.mapNamewithIRev.set(room_info.clients[i].user_name, room_info.clients[i].user_id);
         MYCHAT.addUserInForm(room_info.clients[i].user_name);
       }

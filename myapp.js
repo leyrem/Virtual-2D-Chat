@@ -163,6 +163,8 @@ var MYAPP = {
                                 
                                 WORLD.changeRoom(this.my_user, new_room);
                                 MYCLIENT.changeRoom(new_room.name);
+                                $('#chat-connected-msg').html(`You are connected to room: ${new_room.name}`);
+                                // T
                                 this.current_room = new_room;
                                 
                             }
