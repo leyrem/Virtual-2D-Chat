@@ -12,21 +12,20 @@ var MYAPP = {
         talking: [0,1]
     },
 
-    init: function()
+    init: function(def_room_name)
     {
-        this.current_room = WORLD.createRoom("desert", "background.png");
-        WORLD.createRoom("oasis","oasis.png");
+       
+        //WORLD.createRoom("oasis","oasis.png");
         
-        getImage("oasis.png");
-        this.my_user = new User("Uri");
-        this.current_room.addUser(this.my_user);
-        this.current_room.exits.push({
-            target: "oasis",
-            position: 80,
-            width: 30
-        });
+        //getImage("oasis.png");
+       // this.my_user = new User("Uri");
+        // this.current_room.exits.push({
+        //     target: "oasis",
+        //     position: 80,
+        //     width: 30
+        // });
 
-        WORLD.addUser(this.my_user, this.current_room);
+        //WORLD.addUser(this.my_user, this.current_room);
 
         // TODO:
         // fetch("world.json").then(function(resp) {
@@ -43,7 +42,7 @@ var MYAPP = {
     },
 
     onWorldLoaded: function() {
-         this.current_room = WORLD.rooms.hall;
+         this.current_room = WORLD.rooms[WORLD.default_room];
     },
 
     draw: function( canvas, ctx )
@@ -204,13 +203,15 @@ var MYAPP = {
     onMouse: function( e )
     {
         if(e.type == "mousedown"){
-            var localmouse = this.canvasToWorld(mouse_pos);
-            this.my_user.target[0] = localmouse[0];
-            this.my_user.target[1] = localmouse[1];
-
-            var cursor_exit = this.is_cursor_on_exit();
-            if(cursor_exit) this.my_user.next_room=cursor_exit.target;
-            else this.my_user.next_room="";
+            if(this.my_user) {
+                var localmouse = this.canvasToWorld(mouse_pos);
+                this.my_user.target[0] = localmouse[0];
+                this.my_user.target[1] = localmouse[1];
+    
+                var cursor_exit = this.is_cursor_on_exit();
+                if(cursor_exit) this.my_user.next_room=cursor_exit.target;
+                else this.my_user.next_room="";
+            }
         }else if(e.type == "mousemove"){
     
         }else //mouseup

@@ -66,14 +66,19 @@ var WORLD = {
     rooms: {},
     users: {},
     users_by_id: {},
+    something: null,
 
-    createRoom: function( name, url )
+    createRoom: function( name, url , data)
     {
         var room = new Room(name);
         room.id = this.last_id++;
         room.url = url;
 
-        this.rooms[name] = room;
+        if(data){
+            for(var i in data)
+                room[i] = data[i];
+        }
+
         return room;
     },
 
@@ -106,7 +111,8 @@ var WORLD = {
         // Load data from JSON
         for(var i in json.rooms)
         {
-            this.createRoom(i, json.rooms[i]);
+            var some_room = this.createRoom(i, json.rooms[i].url, json.rooms[i]);
+            this.rooms[some_room.name] = some_room;
         }
         this.last_id = json.last_id;
         this.default_room = json.default_room;
@@ -116,6 +122,6 @@ var WORLD = {
 if(typeof(window) == "undefined")
 {
     module.exports = {
-        WORLD, Room, FACING_FRONT
+        WORLD, Room, FACING_FRONT, User
     };
 }

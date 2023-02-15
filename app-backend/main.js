@@ -48,5 +48,6 @@ wss.on('connection', function (ws, req) {
 
 serverH.listen( 8080 , function() {
     MYSERVER.init();
+    MYSERVER.onReady();
     console.log("[Server] VirtualServer listening!");
 });

@@ -20,22 +20,22 @@ var MYSERVER = {
     {
         console.log("Initializing server...");
 		// TODO:
-		// const data = fs.readFileSync('public/world.json');
-		// WORLD.fromJSON(JSON.parse(data));
-		// console.log("Number of rooms: " + Object.keys( WORLD.rooms ).length);
+		// Tengo un world en servidor y un world en cliente y hay que manternerlos synchornized
+		const data = fs.readFileSync('../public/world.json');
+		WORLD.fromJSON(JSON.parse(data));
+		console.log("Number of rooms: " + Object.keys( WORLD.rooms ).length);
 	},
 
     onReady: function() 
     {
 		// TODO: llamar esta fucnion en main ?? 
         console.log("Server is ready!");
-		this.interval = setInterval(MYSERVER.onTick.bind(MYSERVER), 1000 / 10 ); // 10 times per second
+		//this.interval = setInterval(MYSERVER.onTick.bind(MYSERVER), 1000 / 10 ); // 10 times per second
 	},
 
     onUserConnect: function( conn, req )
     {
         console.log("[server] NEW USER CONNECTED");
-        //var user = new Room.User();
 
         // Assing callbacks to client connection
         conn.sendToClient = function( type, data ) {
@@ -76,11 +76,14 @@ var MYSERVER = {
 
 		// TODO:
 		// Create a user for the new client
-		// var user = new Room.User(conn.user_name);
-		// user.id = conn.user_id;
-		// var room = WORLD.getRoom(WORLD.default_room);
-		// room.addUser(user);
-		// conn.user = user; // Store the user class instace object in the connection websocket
+		var user = new Room.User(conn.user_name);
+		user.id = conn.user_id;							// when user connects to server, draw him/store him in the default room (should be loaded from JSON represenytation of world)
+		var room_s = WORLD.getRoom(WORLD.default_room); // TODO: why storing in the default room and not on the room you pass?
+		//var room_s = WORLD.default_room
+		console.log("Adding user to room: " + room_s.name);
+		WORLD.addUser( user, room_s);
+		//room_s.addUser(user); // WORLD.addUser is called in the client??
+		conn.user = user; // Store the user class instace object in the connection websocket
 		// //user._connection = conn;
 		// Iterate through room.people and send the login to the people stored there.
 		// Send the characteristics of the room to the clieny too --> check video
@@ -252,11 +255,13 @@ var MYSERVER = {
 	{
 		for(const i in this.clients)
 		{
-			client_conn = room.clients[i];
+			client_conn = this.clients[i];
 			var user = client_conn.user;
 			var room = WORLD.getRoom(user.room);
 			if(!room) // user is not in any room
 				continue;
+
+			//console.log("Room: " + room.name + ", length: " + room.people.length);
 			this.sendRoomState(room, client_conn);
 		}
 	},
@@ -265,20 +270,22 @@ var MYSERVER = {
 		// Sending the state to every user in the room
 		var user = connection.user;
 		// TODO: hacer este mensaje conforme a mi protocolo
+
 		var data = {
-			type: "update",
-			user: user,
+			user_id: "server",
+			type: "UPDATE",
+			data: user, // TODO:send the whole user obj?
 			people: []
 		};
 		for(var i = 0; i < room.people.length; i ++ )
 		{
 			var user_id = room.people[i]; 
-			var user = WORLD.getUser(user_id);
+			var user = WORLD.getUserById(user_id);
 			if(!user)
 				continue;
 			data.people.push(user);
 		}
-		connection.sendUTF(JSON.stringify(data));
+		connection.send(JSON.stringify(data));
 	},
 };
 
