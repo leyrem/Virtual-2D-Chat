@@ -96,6 +96,12 @@ var WORLD = {
         user.room = new_room;
         new_room.addUser(user);
     },
+    changeUserTarget: function(user, target){
+        console.log(target);
+        user.target=[target,0];
+        console.log(user);
+        this.users[user.name] = user;
+    },
 
     removeUser: function( user )
     {

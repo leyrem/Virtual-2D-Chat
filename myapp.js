@@ -16,14 +16,7 @@ var MYAPP = {
     {
        
         //WORLD.createRoom("oasis","oasis.png");
-        
-        //getImage("oasis.png");
-       // this.my_user = new User("Uri");
-        // this.current_room.exits.push({
-        //     target: "oasis",
-        //     position: 80,
-        //     width: 30
-        // });
+
 
         //WORLD.addUser(this.my_user, this.current_room);
 
@@ -76,10 +69,14 @@ var MYAPP = {
         if(img){
             ctx.drawImage(img,-img.width * scale/2, -img.height * scale/2, img.width*scale, img.height*scale);
             
+            var doorImg = getImage("doorSpritesheet.png");
+            
             for(var i = 0; i<room.exits.length;++i){
                 var exit = room.exits[i];
                 ctx.fillStyle = "red";
-                ctx.fillRect(exit.position,40,exit.width,60);
+                var verticalOutput = 0;
+                if(room.exits[i].target==this.my_user.next_room) verticalOutput = doorImg.height/2;
+                ctx.drawImage(doorImg, 0, verticalOutput, doorImg.width, doorImg.height/2, exit.position,20,exit.width,60);
             }
 
             //draw room users
@@ -112,15 +109,13 @@ var MYAPP = {
         // ctx.lineTo(user.target[0],user.target[1]);
         // ctx.stroke();
     },
+    updateUser:function(user, dt){
+        if(user){
 
-    update: function( dt )
-    {
-        if(this.my_user){
+            var room = this.current_room;
+            user.target[0] = clamp(user.target[0],room.range[0],room.range[1]);
 
-            var room = WORLD.getRoom(this.my_user.room);
-            this.my_user.target[0] = clamp(this.my_user.target[0],room.range[0],room.range[1]);
-
-            var diff= (this.my_user.target[0]-this.my_user.position);
+            var diff= (user.target[0]-user.position);
             var delta = diff;
             if (delta>0){
                 delta = 30;
@@ -130,24 +125,56 @@ var MYAPP = {
                 delta=0;
             }
             if (Math.abs(diff)<1){
-                this.my_user.position = this.my_user.target[0];
+                user.position = user.target[0];
                 delta=0;
             }else{
-                this.my_user.position += delta*dt;
+                user.position += delta*dt;
             }
 
             if(delta==0){
-                this.my_user.animation="idle";
+                user.animation="idle";
             }else{
                 if(delta>0){
-                    this.my_user.facing=FACING_RIGHT;
+                    user.facing=FACING_RIGHT;
                 }else{
-                    this.my_user.facing=FACING_LEFT;
+                    user.facing=FACING_LEFT;
                 }
-                this.my_user.animation="walking";
+                user.animation="walking";
 
                 
             }
+
+            
+            var wUser = WORLD.getUserById(user.id);
+            wUser = user;
+        }
+    },
+
+    update: function( dt )
+    {
+
+        if(this.current_room){
+            for(var i=0;i<this.current_room.people.length;++i){
+                var user = WORLD.getUserById(this.current_room.people[i]);
+                this.updateUser(user,dt);
+            }
+
+
+            
+            for(var i=0; i<this.current_room.exits.length;++i){
+                var exit = this.current_room.exits[i];
+                if(exit.target==this.my_user.next_room){ //si hi ha 2 portes que van a la mateixa room, i clica la més llunyana, entraria a la primera que passi per sobre
+                    if(this.my_user.position>exit.position){
+                        if(this.my_user.position<exit.position+exit.width){
+                            
+                            var new_room = WORLD.getRoom(exit.target);
+                            this.my_user.room = exit.target;
+                            //new_room.people.push(this.my_user.name);
+                            
+                            WORLD.changeRoom(this.my_user, new_room);
+                            MYCLIENT.changeRoom(new_room.name);
+                            this.current_room = new_room;
+
             this.cam_offset=lerp(this.cam_offset, -this.my_user.position,0.02);
 
             if(this.current_room){
@@ -171,9 +198,12 @@ var MYAPP = {
                         }
                     }
                 }
-                this.is_cursor_on_exit();
-            }   
+            }
+            this.is_cursor_on_exit();
         }
+        if(this.my_user)
+        this.cam_offset=lerp(this.cam_offset, -this.my_user.position,0.02);
+        
     },
 
      is_cursor_on_exit: function()
@@ -184,8 +214,8 @@ var MYAPP = {
             var exit = this.current_room.exits[i];
             if(localmouse[0]>exit.position){
                 if(localmouse[0]<exit.position+exit.width){
-                    if(localmouse[1]>40){//change the hardcode to datacode
-                        if(localmouse[1]<100){
+                    if(localmouse[1]>20){//change the hardcode to datacode
+                        if(localmouse[1]<80){
                             cursor_exit = exit;
                             
                         }
@@ -205,6 +235,18 @@ var MYAPP = {
     onMouse: function( e )
     {
         if(e.type == "mousedown"){
+
+            var localmouse = this.canvasToWorld(mouse_pos);
+            this.my_user.target[0] = localmouse[0];
+            this.my_user.target[1] = localmouse[1];
+
+            var cursor_exit = this.is_cursor_on_exit();
+            if(cursor_exit) this.my_user.next_room=cursor_exit.target;
+            else this.my_user.next_room="";
+
+
+            
+
             if(this.my_user) {
                 var localmouse = this.canvasToWorld(mouse_pos);
                 this.my_user.target[0] = localmouse[0];
@@ -213,7 +255,10 @@ var MYAPP = {
                 var cursor_exit = this.is_cursor_on_exit();
                 if(cursor_exit) this.my_user.next_room=cursor_exit.target;
                 else this.my_user.next_room="";
+                var msg = {content: this.my_user.target[0], userName:this.my_user.name, type:"movement"};
+            if(MYCLIENT.on_connect!=null) MYCLIENT.sendMessage(msg);
             }
+
         }else if(e.type == "mousemove"){
     
         }else //mouseup

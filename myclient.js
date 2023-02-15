@@ -185,6 +185,13 @@ var MYCLIENT = { // THS IS THE CLIENT
                     //room.addUser(user);
                 }
             }
+        }else if(type == "movement")
+        {
+            //console.log("Another user is moving");
+            var msg = JSON.parse(data); 
+            var user = WORLD.getUserById(author_id);
+            WORLD.changeUserTarget(user, msg.content);
+
         }
     },
     sendMessage: function( msg ) // Sends a message to all clients in the room
