@@ -34,9 +34,6 @@ const MYCHAT = {
 
     // Join chat
     $('#send-button-join').click(MYCHAT.addChatroom);
-    $('#on-join-input-roomName').on('keypress', function(e) {
-      if (e.which == 13) MYCHAT.addChatroom();
-    });
     $('#on-join-input-userName').on('keypress', function(e) {
       if (e.which == 13) MYCHAT.addChatroom();
     });
@@ -93,22 +90,41 @@ const MYCHAT = {
   },
   addChatroom: function()
   {
-    const roomName = $('#on-join-input-roomName').val();
     const userName = $('#on-join-input-userName').val();
     // If the input is empty, do not add
-    if (roomName == '' || userName =='') return;
+    if (userName =='') return;
     MYCHAT.myUser = userName;
-    // Create the HTML for the chat
-    MYCHAT.createChat(roomName);
-    // Hide the init screen
-    document.getElementById('login-page').style.display = 'none';
-    MYCHAT.selected = 1;
-    // Connect to the server
-    MYCHAT.connectServer(userName, roomName);
+    
+
+    fetch("./public/world.json")
+    .then(function(resp) {
+            return resp.json();
+        }).then(function(json) {
+            WORLD.fromJSON(json);
+            MYAPP.onWorldLoaded();
+
+            var roomName = WORLD.default_room;
+            console.log("woldd; " +JSON.stringify(json));
+
+            // Create the HTML for the chat
+            MYCHAT.createChat(roomName);
+            // Hide the init screen
+            document.getElementById('login-page').style.display = 'none';
+            MYCHAT.selected = 1;
+            // Connect to the server
+            MYCHAT.connectServer(userName, roomName);
+        }).catch( function(error){
+          console.log("Error in fecth:" + error);
+        }
+        );
+
+
+
   },
   connectServer: function(userName, roomName)
   {
 
+    //MYAPP.init();
     $('#chat-connected-msg-status').html(`NOT CONNECTED :(`);
 
     //const server = new VirtualClient();
@@ -135,6 +151,9 @@ const MYCHAT = {
       MYCLIENT.on_user_disconnected = MYCHAT.onUserDisconnect;
       MYCLIENT.on_message = MYCHAT.onNewMessageReceived;
       MYCLIENT.on_close = MYCHAT.onClose;
+      MYAPP.my_user = new User(userName);
+      MYAPP.my_user.id = id;
+      WORLD.addUser(MYAPP.my_user, MYAPP.current_room);
     };
     //MYCHAT.server = server;
   },
@@ -142,6 +161,9 @@ const MYCHAT = {
   {
     for (var i = 0; i < room_info.clients.length; i++ ) {
       if(room_info.clients[i].user_id != MYCHAT.myUserID) {
+        var new_user = new User(room_info.clients[i].user_name);
+        new_user.id = room_info.clients[i].user_id;
+        WORLD.addUser(new_user, MYAPP.current_room);
         MYCHAT.mapNamewithIRev.set(room_info.clients[i].user_name, room_info.clients[i].user_id);
         MYCHAT.addUserInForm(room_info.clients[i].user_name);
       }

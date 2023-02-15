@@ -78,6 +78,6 @@ document.body.addEventListener("mouseup",onMouse);
 document.body.addEventListener("keyup",onKeyUp);
 document.body.addEventListener("keydown",onKeyDown);
 
-MYAPP.init();
+
 
 

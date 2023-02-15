@@ -86,7 +86,7 @@ var MYCLIENT = { // THS IS THE CLIENT
             // };
         if( msg.data.constructor === String ) {
 			const parsedMsg = JSON.parse(msg.data);
-			this.processServerEvent( parsedMsg.user_id, parsedMsg.type,  parsedMsg.data );
+			this.processServerEvent( parsedMsg.user_id, parsedMsg.type,  parsedMsg.data, parsedMsg );
 		}
 		else
 			console.warn("Unknown message type");
@@ -105,7 +105,7 @@ var MYCLIENT = { // THS IS THE CLIENT
         this.socket = null;
         this.clients = {};
     },
-    processServerEvent: function ( author_id, type, data )
+    processServerEvent: function ( author_id, type, data, parsedMsg )
     {
         console.log("Processing server event, type: " + type + " , data: " + data);
         if (type == "CHAT_MSG") // user message received
@@ -161,23 +161,28 @@ var MYCLIENT = { // THS IS THE CLIENT
 
             if(this.on_room_info)
                 this.on_room_info( room_info );
-        } else if (type == "update")
+        } else if (type == "UPDATE") // data is user
         {
-            // TODO: pass the parsedMsg to the fucntion
-            var room = WORLD.getRoom(parsedMsg.user.room);
+            var user = data;
+
+            if(user.id === this.user_id) return;
+            var room = WORLD.getRoom(user.room);
             if(room) {
                 MYAPP.current_room = room; // TODO: do this
             }
-            for (var i = 0; i < parsedMsg.people.length; i++)
+            console.log("People length: " + parsedMsg.people.length);
+            for (var i = 0; i < parsedMsg.people.length; i++) // iterate through all people in the room you are in
             {
                 var other = parsedMsg.people[i];
-                var user = WORLD.getUser(other.id);
-                if(user) {
+                var user = WORLD.getUserById(other.id);
+                if(user) { // user is in the world already
+                    console.log("Updating user json");
                     user.fromJSON(other); // update user with info just received
-                } else {
-                    user = new User(user.name);
+                } else { // user is not in the world
+                    user = new User(other.name); // TODO: other.name or user.name here ?
                     user.fromJSON(other);
-                    room.addUser(user);
+                    WORLD.addUser( user, room);
+                    //room.addUser(user);
                 }
             }
         }else if(type == "movement")
@@ -209,7 +214,7 @@ var MYCLIENT = { // THS IS THE CLIENT
         var newMsg = {
             isSentToAll: true,
             target: null,
-            msgData: msg
+            msgData: msg,
         }
         
         this.socket.send(JSON.stringify(newMsg));
