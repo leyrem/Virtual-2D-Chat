@@ -67,17 +67,20 @@ var MYAPP = {
         var img = getImage(room.url);
 
         if(img){
+
             ctx.drawImage(img,-img.width * scale/2, -img.height * scale/2, img.width*scale, img.height*scale);
-            
-            var doorImg = getImage("doorSpritesheet.png");
-            
-            for(var i = 0; i<room.exits.length;++i){
-                var exit = room.exits[i];
-                ctx.fillStyle = "red";
-                var verticalOutput = 0;
-                if(room.exits[i].target==this.my_user.next_room) verticalOutput = doorImg.height/2;
-                ctx.drawImage(doorImg, 0, verticalOutput, doorImg.width, doorImg.height/2, exit.position,20,exit.width,60);
+            if(this.my_user){
+                var doorImg = getImage("doorSpritesheet.png");
+    
+                for(var i = 0; i<room.exits.length;++i){
+                    var exit = room.exits[i];
+                    ctx.fillStyle = "red";
+                    var verticalOutput = 0;
+                    if(room.exits[i].target==this.my_user.next_room) verticalOutput = doorImg.height/2;
+                    ctx.drawImage(doorImg, 0, verticalOutput, doorImg.width, doorImg.height/2, exit.position,20,exit.width,60);
+                }
             }
+            
 
             //draw room users
             for(var i=0; i<room.people.length;++i){
@@ -153,14 +156,14 @@ var MYAPP = {
     update: function( dt )
     {
 
-        if(this.current_room){
+        if(this.current_room && this.my_user){
             for(var i=0;i<this.current_room.people.length;++i){
                 var user = WORLD.getUserById(this.current_room.people[i]);
                 this.updateUser(user,dt);
             }
 
 
-            
+
             for(var i=0; i<this.current_room.exits.length;++i){
                 var exit = this.current_room.exits[i];
                 if(exit.target==this.my_user.next_room){ //si hi ha 2 portes que van a la mateixa room, i clica la més llunyana, entraria a la primera que passi per sobre
@@ -173,37 +176,17 @@ var MYAPP = {
                             
                             WORLD.changeRoom(this.my_user, new_room);
                             MYCLIENT.changeRoom(new_room.name);
+                            $('#chat-connected-msg').html(`You are connected to room: ${new_room.name}`);
+                            // T
                             this.current_room = new_room;
-
-            this.cam_offset=lerp(this.cam_offset, -this.my_user.position,0.02);
-
-            if(this.current_room){
-                for(var i=0; i<this.current_room.exits.length;++i){
-                    var exit = this.current_room.exits[i];
-                    if(exit.target==this.my_user.next_room){ //si hi ha 2 portes que van a la mateixa room, i clica la més llunyana, entraria a la primera que passi per sobre
-                        if(this.my_user.position>exit.position){
-                            if(this.my_user.position<exit.position+exit.width){
-                                
-                                var new_room = WORLD.getRoom(exit.target);
-                                this.my_user.room = exit.target;
-                                //new_room.people.push(this.my_user.name);
-                                
-                                WORLD.changeRoom(this.my_user, new_room);
-                                MYCLIENT.changeRoom(new_room.name);
-                                $('#chat-connected-msg').html(`You are connected to room: ${new_room.name}`);
-                                // T
-                                this.current_room = new_room;
-                                
-                            }
                         }
                     }
                 }
+            
             }
             this.is_cursor_on_exit();
+            this.cam_offset=lerp(this.cam_offset, -this.my_user.position,0.02);
         }
-        if(this.my_user)
-        this.cam_offset=lerp(this.cam_offset, -this.my_user.position,0.02);
-        
     },
 
      is_cursor_on_exit: function()
@@ -235,18 +218,6 @@ var MYAPP = {
     onMouse: function( e )
     {
         if(e.type == "mousedown"){
-
-            var localmouse = this.canvasToWorld(mouse_pos);
-            this.my_user.target[0] = localmouse[0];
-            this.my_user.target[1] = localmouse[1];
-
-            var cursor_exit = this.is_cursor_on_exit();
-            if(cursor_exit) this.my_user.next_room=cursor_exit.target;
-            else this.my_user.next_room="";
-
-
-            
-
             if(this.my_user) {
                 var localmouse = this.canvasToWorld(mouse_pos);
                 this.my_user.target[0] = localmouse[0];

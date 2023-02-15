@@ -13,8 +13,18 @@
             "exits": [
                 {
                     "target": "oasis",
-                    "position": 80,
-                    "width": 30
+                    "position": 100,
+                    "width": 100
+                },
+                {
+                    "target": "oasis",
+                    "position": 0,
+                    "width": 100
+                },
+                {
+                    "target": "oasis",
+                    "position": -100,
+                    "width": 100
                 }
             ],
             "items": []
@@ -26,7 +36,13 @@
             "offset": [0, -70],
             "people": [],
             "range": [-100, 100],
-            "exits": [],
+            "exits": [
+                {
+                    "target": "desert",
+                    "position": -80,
+                    "width": 100
+                }
+            ],
             "items": []
         }
     }
