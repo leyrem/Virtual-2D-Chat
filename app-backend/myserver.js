@@ -149,12 +149,14 @@ var MYSERVER = {
 			// 	target: null,
 			// 	msgData: msg
 			// }
-		
+		var parsedTemp = JSON.parse(msgReceived.msgData);
 
 		if(msgReceived.createNewRoom) {
 			this.changeRoom(msgReceived.msgData);
 		} else if (msgReceived.type == "action") { // TODO: hacer esto conforme a mi protocolo de mensajes
 			console.log();
+		} else if(parsedTemp.type == "movement"){
+			this.sendToRoom(ws.room_name, ws.user_id.toString(), msgReceived.isSentToAll, "movement", msgReceived.msgData, msgReceived.target);
 		} else {
 			this.sendToRoom(ws.room_name, ws.user_id.toString(), msgReceived.isSentToAll, "CHAT_MSG", msgReceived.msgData, msgReceived.target);
 		}

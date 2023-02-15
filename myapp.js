@@ -231,7 +231,7 @@ var MYAPP = {
             else this.my_user.next_room="";
 
 
-            var msg = {data: this.my_user.target[0], user_id:this.my_user.id, type:"movement"};
+            var msg = {content: this.my_user.target[0], userName:this.my_user.name, type:"movement"};
             if(MYCLIENT.on_connect!=null) MYCLIENT.sendMessage(msg);
         }else if(e.type == "mousemove"){
     

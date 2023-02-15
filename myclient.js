@@ -182,8 +182,10 @@ var MYCLIENT = { // THS IS THE CLIENT
             }
         }else if(type == "movement")
         {
-            var user = WORLD.getUserById(msg.user_id);
-            WORLD.users[user.name].target = [msg.data,msg.data]; 
+            //console.log("Another user is moving");
+            var msg = JSON.parse(data); 
+            var user = WORLD.getUserById(author_id);
+            WORLD.changeUserTarget(user, msg.content);
 
         }
     },
