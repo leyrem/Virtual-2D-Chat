@@ -16,8 +16,9 @@ var MYCLIENT = { // THS IS THE CLIENT
     on_message: null,
     on_user_connected: null,
     on_user_disconnected: null,
+    on_auth: null,
 
-    connect: function( url, room_name, user_name ) 
+    connect: function( url, room_name, user_name, password ) 
     {
         if(!url)
             throw("You must specify the server URL of the server");
@@ -25,6 +26,8 @@ var MYCLIENT = { // THS IS THE CLIENT
             throw("You must specify a room name to connect to the Virtual Server");
         if(!user_name)
             throw("You must specify a user name to connect to the Virtual Server");
+        if(!password)
+            throw("You must specify a password to connect to the Virtual Server");
     
         this.user_name = user_name;
         this.room_name = room_name;
@@ -50,7 +53,7 @@ var MYCLIENT = { // THS IS THE CLIENT
 
         var protocol = "ws://";
         //var final_url = protocol + url + "/ws/" + room_name + "+" + user_name;
-        var final_url = protocol + url + "/" + room_name + "+" + user_name;
+        var final_url = protocol + url + "/" + room_name + "+" + user_name + "+" + password;
         this.socket = new WebSocket(final_url);
         this.socket.onopen = this.onOpen.bind(this); 
         this.socket.onclose = this.onClose.bind(this);
@@ -191,6 +194,11 @@ var MYCLIENT = { // THS IS THE CLIENT
             var msg = JSON.parse(data); 
             var user = WORLD.getUserById(author_id);
             WORLD.changeUserTarget(user, msg.content);
+
+        } else if (type == "AUTH") {
+
+            if(this.on_auth)
+                this.on_auth(data);
 
         }
     },

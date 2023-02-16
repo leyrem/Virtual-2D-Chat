@@ -1,4 +1,5 @@
 var Room = require('../public/room.js');
+var DATABASE_MANAGER = require('./credentials.js').DATABASE_MANAGER;
 var WORLD = Room.WORLD;
 const fs = require('fs');
 
@@ -33,19 +34,29 @@ var MYSERVER = {
 		//this.interval = setInterval(MYSERVER.onTick.bind(MYSERVER), 1000 / 10 ); // 10 times per second
 	},
 
-    onUserConnect: function( conn, req )
+    onUserConnect: async function( conn, req )
     {
         console.log("[server] NEW USER CONNECTED");
 
         // Assing callbacks to client connection
         conn.sendToClient = function( type, data ) {
             console.log("[server] Sending " + type + " to client, data is: " + data);
-			var msgT = { 
-				user_id: this.user_id.toString(),
-				type: type,
-				data: data
-			};
-			this.send(JSON.stringify(msgT));
+			if(type == "AUTH") {
+				var msgT = { 
+					user_id: "non",
+					type: type,
+					data: data
+				};
+				this.send(JSON.stringify(msgT));
+			} else {
+				var msgT = { 
+					user_id: this.user_id.toString(),
+					type: type,
+					data: data
+				};
+				this.send(JSON.stringify(msgT));
+			}
+			
         };
 
         // Get room name and user name
@@ -55,6 +66,16 @@ var MYSERVER = {
 		var sent_info = path_info.pathname.split("+");
 		var room_name = sent_info[0];
 		var user_name = sent_info[1];
+		const password = sent_info[2];
+
+		// DEAL WITH PASSORD
+		var ret = await DATABASE_MANAGER.login(user_name, password);
+		if(ret == false) {
+			conn.sendToClient("AUTH", false);
+		  	return;
+		}
+		conn.sendToClient("AUTH", true);
+
         // Assing room_name to client connection
 		conn.room_name = room_name.substr(1, room_name.length); //strip the dash
         // Assing ID to client connection
@@ -125,6 +146,7 @@ var MYSERVER = {
         console.log("User disconnected");
         console.log('[server] Close socket of user_id: ' + conn.user_id);
 
+		if(!conn.user_id) return;
 		this.sendToRoom(conn.room_name, conn.user_id.toString(), true, "LOGOUT", conn.user_id.toString(), null);
 	
 		var room = this.rooms[conn.room_name];

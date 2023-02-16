@@ -31,6 +31,7 @@ var REDIS_CLIENT = {
     try {
       const val = await this.redis_client.get(key);
       console.log("[REDIS] Got val: " +  val + ", for key: " + key);
+      return val;
     } catch (e) {
       console.error(e);
     }
@@ -40,13 +41,14 @@ var REDIS_CLIENT = {
   {
     try {
       await this.redis_client.quit();
+      console.log("[REDIS] Disconnected from Redis!");
     } catch (e) {
       console.error(e);
     }
   },
 };
 
-module.exports = { REDIS_CLIENT };
+module.exports = {REDIS_CLIENT};
 
 // async function nodeRedisDemo() {
 //   try {

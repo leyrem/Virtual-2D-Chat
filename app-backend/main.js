@@ -2,6 +2,7 @@
 
 var WebSocket = require('../node_modules/ws');
 var WebSocketServer = WebSocket.Server;
+var DATABASE_MANAGER = require('./credentials.js').DATABASE_MANAGER;
 
 var MYSERVER = require('./myserver.js').MYSERVER;
 var queryString = require('querystring'),
@@ -46,8 +47,14 @@ wss.on('connection', function (ws, req) {
     
 });
 
+wss.on('close', function(e) {
+    DATABASE_MANAGER.quit();
+});
+
 serverH.listen( 8080 , function() {
     MYSERVER.init();
     MYSERVER.onReady();
+    // Connect to DB 
+    DATABASE_MANAGER.init();
     console.log("[Server] VirtualServer listening!");
 });

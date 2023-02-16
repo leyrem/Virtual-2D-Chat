@@ -37,6 +37,9 @@ const MYCHAT = {
     $('#on-join-input-userName').on('keypress', function(e) {
       if (e.which == 13) MYCHAT.addChatroom();
     });
+    $('#on-join-input-password').on('keypress', function(e) {
+      if (e.which == 13) MYCHAT.addChatroom();
+    });
 
     // Send messages
     $('#send_button').click(MYCHAT.sendMessage);
@@ -91,8 +94,10 @@ const MYCHAT = {
   addChatroom: function()
   {
     const userName = $('#on-join-input-userName').val();
+    const password = $('#on-join-input-password').val();
     // If the input is empty, do not add
-    if (userName =='') return;
+    if (userName =='' || password == '') return;
+
     MYCHAT.myUser = userName;
     
 
@@ -112,7 +117,7 @@ const MYCHAT = {
             document.getElementById('login-page').style.display = 'none';
             MYCHAT.selected = 1;
             // Connect to the server
-            MYCHAT.connectServer(userName, roomName);
+            MYCHAT.connectServer(userName, roomName, password);
         }).catch( function(error){
           console.log("Error in fecth:" + error);
         }
@@ -121,7 +126,7 @@ const MYCHAT = {
 
 
   },
-  connectServer: function(userName, roomName)
+  connectServer: function(userName, roomName, password)
   {
 
     //MYAPP.init();
@@ -131,7 +136,7 @@ const MYCHAT = {
     // The full url used will be ws://localhost:1337/roomName+userName
     //server.connect( 'localhost:1337', roomName, userName);
     // server.connect('ecv-etic.upf.edu/node/9018', roomName, userName);
-    MYCLIENT.connect('localhost:8080', roomName, userName);
+    MYCLIENT.connect('localhost:8080', roomName, userName, password);
 
     //$(`#chat${MYCHAT.selected}_server_info`).html( 'Connecting...' );
 
@@ -141,6 +146,15 @@ const MYCHAT = {
       $('#chat-connected-msg-status').html(`CONNECTED :)`);
       $('#add-chat-div').css('display', 'flex');
     };
+
+    MYCLIENT.on_auth = function( is_valid ) {
+      if(is_valid == true) {
+        alert("Correct password");
+      } else {
+        alert("Incorrect password, try again!");
+        location.reload(); // Reload page
+      }
+    }
     MYCLIENT.on_ready = function(id) {
       $('#chat-connected-msg-userName').html(`Your userName is: ${userName}`);
       $('#chat-connected-msg-userID').html(`Your userID is: ${id}`);
