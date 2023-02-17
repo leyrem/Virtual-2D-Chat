@@ -51,7 +51,7 @@ var MYCLIENT = { // THS IS THE CLIENT
             return;
         }
 
-        var protocol = "ws://";
+        var protocol = "wss://";
         //var final_url = protocol + url + "/ws/" + room_name + "+" + user_name;
         var final_url = protocol + url + "/" + room_name + "+" + user_name + "+" + password;
         this.socket = new WebSocket(final_url);
@@ -113,6 +113,7 @@ var MYCLIENT = { // THS IS THE CLIENT
         console.log("Processing server event, type: " + type + " , data: " + data);
         if (type == "CHAT_MSG") // user message received
         {
+            MYAPP.receiveMSG(data);
             if(this.on_message)
                 this.on_message( author_id, data );
         }
@@ -149,7 +150,7 @@ var MYCLIENT = { // THS IS THE CLIENT
             this.user_id = author_id;
             this.clients[ author_id ] = { id: author_id, name: this.user_name };
             if(this.on_ready)
-                this.on_ready( author_id );
+                this.on_ready( author_id, data );
         }
         else if (type == "ROOM_INFO") // Get room info
         {
@@ -206,6 +207,13 @@ var MYCLIENT = { // THS IS THE CLIENT
     {
         if(!msg)
             return;
+
+        var parsedMsg = JSON.parse(msg);
+        if(parsedMsg.type=="text"){
+            console.log("Updating last message, new text: ");
+            MYAPP.my_user.lastMsg = {content:parsedMsg.content,timeStamp:Date.now()/1000};
+        }
+
         if(msg.constructor === Object)
             msg = JSON.stringify(msg);
         if(!msg.constructor === String){

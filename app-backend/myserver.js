@@ -86,9 +86,6 @@ var MYSERVER = {
 
         this.clientIDtoUsername.set(conn.user_id.toString(), conn.user_name);
 
-        // Send ID to client
-        conn.sendToClient("USER_ID", conn.user_id.toString());
-
         // Add client to room (or create it)
         if(this.rooms[conn.room_name] == null) this.createRoom(conn.room_name);
 		var room = this.rooms[conn.room_name];
@@ -101,8 +98,6 @@ var MYSERVER = {
 		user.id = conn.user_id;							// when user connects to server, draw him/store him in the default room (should be loaded from JSON represenytation of world)
 		var room_s = WORLD.getRoom(WORLD.default_room); // TODO: why storing in the default room and not on the room you pass?
 		//var room_s = WORLD.default_room
-		console.log("Adding user to room: " + room_s.name);
-		WORLD.addUser( user, room_s);
 		//room_s.addUser(user); // WORLD.addUser is called in the client??
 		conn.user = user; // Store the user class instace object in the connection websocket
 		// //user._connection = conn;
@@ -110,14 +105,30 @@ var MYSERVER = {
 		// Send the characteristics of the room to the clieny too --> check video
 		// The client will call WORLD.createRoom when joining a new room with the data the server sends him
 
+		WORLD.addUser( conn.user, room_s );
+
+		var pos_recv = await DATABASE_MANAGER.get_user_position(conn.user_name);
+		if(pos_recv != null){
+			if(pos_recv >= 100 ) pos_recv = 99;
+			if(pos_recv <= -100) pos_recv = -99;
+			// Send ID to client and position
+			conn.sendToClient("USER_ID", pos_recv);
+		}  else {
+			conn.sendToClient("USER_ID", 0);
+		}
+
+		console.log("[SERVER] Adding user to WORLD in room: " + room_s.name + ", on position: " + user.position);
+
+
+
         // send room info
 		this.sendRoomInfo(conn);
 		// send login info
 		this.sendLoginInfo(conn);
 	
         // Send all buffered messages in the room to client
-		for(var i = 0; i < room.buffer.length; ++i)
-            conn.sendToClient("CHAT_MSG", room.buffer[i]);
+		// for(var i = 0; i < room.buffer.length; ++i)
+        //     conn.sendToClient("CHAT_MSG", room.buffer[i]);
 
     },
 
@@ -141,13 +152,16 @@ var MYSERVER = {
 		this.rooms[name] = { clients: {}, buffer:[] };
     },
 
-    onUserDisconnect: function( conn )
+    onUserDisconnect: async function( conn )
     {
         console.log("User disconnected");
         console.log('[server] Close socket of user_id: ' + conn.user_id);
 
 		if(!conn.user_id) return;
 		this.sendToRoom(conn.room_name, conn.user_id.toString(), true, "LOGOUT", conn.user_id.toString(), null);
+
+		// Storing the user's last position
+		await DATABASE_MANAGER.save_user_position(conn.user_name, conn.user.position);
 	
 		var room = this.rooms[conn.room_name];
 		if(room)
@@ -175,9 +189,16 @@ var MYSERVER = {
 
 		if(msgReceived.createNewRoom) {
 			this.changeRoom(msgReceived.msgData);
-		} else if (msgReceived.type == "action") { // TODO: hacer esto conforme a mi protocolo de mensajes
-			console.log();
 		} else if(JSON.parse(msgReceived.msgData).type == "movement"){
+			// UPDATE WORLD SERVER INSTANCE
+
+			ws.user.position =  JSON.parse(msgReceived.msgData).content;
+			ws.user.target[0] =  JSON.parse(msgReceived.msgData).content;
+
+			WORLD.users[ws.user_name].position = JSON.parse(msgReceived.msgData).content;
+			WORLD.users[ws.user_name].target[0] = JSON.parse(msgReceived.msgData).content;
+			//var user_p = WORLD.getUserById(ws.user_id);
+            //WORLD.changeUserTarget(user_p, JSON.parse(msgReceived.msgData).content);
 			this.sendToRoom(ws.room_name, ws.user_id.toString(), msgReceived.isSentToAll, "movement", msgReceived.msgData, msgReceived.target);
 		} else {
 			this.sendToRoom(ws.room_name, ws.user_id.toString(), msgReceived.isSentToAll, "CHAT_MSG", msgReceived.msgData, msgReceived.target);
@@ -268,8 +289,8 @@ var MYSERVER = {
 		this.sendLoginInfo(client_conn);
 
 		 // Send all buffered messages in the room to client
-		for(var i = 0; i < room.buffer.length; ++i)
-			client_conn.sendToClient("CHAT_MSG", room.buffer[i]);
+		// for(var i = 0; i < room.buffer.length; ++i)
+		// 	client_conn.sendToClient("CHAT_MSG", room.buffer[i]);
 
 	},
 	onTick: function() // send to client heatbearts of the current state of the server

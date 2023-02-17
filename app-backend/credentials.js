@@ -52,6 +52,25 @@ var DATABASE_MANAGER = {
         console.log(`[DB MANAGER] User ${user_name} password provided is ${isOk ? "correct" : "incorrect"}`)
         return isOk;
     },
+
+    save_user_position: async function( user_name, position )
+    {
+        if(user_name == null)
+            throw("Cannot save position of user because user_name is null");
+        if(position == null)
+            throw("Cannot save position of user because position is null");
+
+        await REDIS_CLIENT.set_key_value("users:" + user_name + ":postion", position);
+    },
+
+    get_user_position: async function( user_name )
+    {
+        if(user_name == null)
+            throw("Cannot save position of user because user_name is null");
+            
+        return await REDIS_CLIENT.get_value_from_key("users:" + user_name + ":postion");
+    },
+
 }
 
 module.exports = { DATABASE_MANAGER };

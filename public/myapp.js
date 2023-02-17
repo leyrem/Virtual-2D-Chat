@@ -1,3 +1,13 @@
+// Testing if click is inside canvas
+var isMouseHover = false;
+var canvas = document.querySelector("canvas");
+canvas.addEventListener("mouseleave", function (event) {
+    isMouseHover = false
+    
+    });
+canvas.addEventListener("mouseover", function (event) {
+    isMouseHover = true
+});
 
 
 var MYAPP = {
@@ -56,7 +66,10 @@ var MYAPP = {
 
     canvasToWorld: function( pos )
     {
-        return [(pos[0] - canvas.width/2)/this.scale-this.cam_offset, (pos[1] - canvas.height/2)/this.scale];
+        var a = (pos[0] - canvas.width/2)/this.scale-this.cam_offset;
+        var b = (pos[1] - canvas.height/2)/this.scale;
+
+        return [a, b];
     },
     
     drawRoom: function( ctx, room )
@@ -70,7 +83,7 @@ var MYAPP = {
 
             ctx.drawImage(img,-img.width * scale/2, -img.height * scale/2, img.width*scale, img.height*scale);
             if(this.my_user){
-                var doorImg = getImage("doorSpritesheet.png");
+                var doorImg = getImage("images/doorSpritesheet.png");
     
                 for(var i = 0; i<room.exits.length;++i){
                     var exit = room.exits[i];
@@ -94,7 +107,11 @@ var MYAPP = {
     },
 
     drawUser:function(ctx, user){
-        if(!user.avatar) return;
+        if(!user.avatar) 
+        {
+            console.log("Not user avatar");
+            return;
+        }
 
         var anim = this.animations[user.animation];
         if(!anim) return;
@@ -105,6 +122,20 @@ var MYAPP = {
         var frame = anim[Math.floor(time*7) % anim.length];
         var facing = user.facing;
         ctx.drawImage(img, frame*32, facing*64, 32, 64, user.position-16,20, 32, 64);
+
+        // Draw message on canvas
+        if((Date.now()/1000-user.lastMsg.timeStamp)<5){
+            ctx.style = "black";            
+            ctx.fillStyle = "white";
+            ctx.rect(user.position-50,-100,100,100);
+            ctx.fill();
+            ctx.stroke();
+            ctx.font = "24px serif";
+            ctx.textBaseline = "top";
+            ctx.fillStyle = "black";
+            ctx.fillText(user.lastMsg.content,user.position-50,-100);
+            ctx.stroke();
+        }
 
         // ctx.strokeStyle="red";
         // ctx.beginPath();
@@ -128,8 +159,10 @@ var MYAPP = {
                 delta=0;
             }
             if (Math.abs(diff)<1){
-                user.position = user.target[0];
-                delta=0;
+                if(typeof(user.target[0])!=typeof("1")){
+                    user.position = user.target[0];
+                    delta=0;
+                }
             }else{
                 user.position += delta*dt;
             }
@@ -146,8 +179,7 @@ var MYAPP = {
 
                 
             }
-
-            
+            user.position = clamp(user.position, room.range[0], room.range[1]);
             var wUser = WORLD.getUserById(user.id);
             wUser = user;
         }
@@ -177,6 +209,7 @@ var MYAPP = {
                             WORLD.changeRoom(this.my_user, new_room);
                             MYCLIENT.changeRoom(new_room.name);
                             $('#chat-connected-msg').html(`You are connected to room: ${new_room.name}`);
+                            document.getElementById('chat_msg').innerHTML = "";
                             // T
                             this.current_room = new_room;
                         }
@@ -185,6 +218,7 @@ var MYAPP = {
             
             }
             this.is_cursor_on_exit();
+            if(isNaN(this.cam_offset)) this.cam_offset = 0;
             this.cam_offset=lerp(this.cam_offset, -this.my_user.position,0.02);
         }
     },
@@ -217,19 +251,22 @@ var MYAPP = {
 
     onMouse: function( e )
     {
-        if(e.type == "mousedown"){
-            if(this.my_user) {
-                var localmouse = this.canvasToWorld(mouse_pos);
-                this.my_user.target[0] = localmouse[0];
-                this.my_user.target[1] = localmouse[1];
-    
-                var cursor_exit = this.is_cursor_on_exit();
-                if(cursor_exit) this.my_user.next_room=cursor_exit.target;
-                else this.my_user.next_room="";
-                var msg = {content: this.my_user.target[0], userName:this.my_user.name, type:"movement"};
-            if(MYCLIENT.on_connect!=null) MYCLIENT.sendMessage(msg);
-            }
 
+        var localmouse = this.canvasToWorld(mouse_pos);
+        if(e.type == "mousedown"){
+            if(localmouse[0].constructor != String && !isNaN(localmouse[0])){
+                if(this.my_user && isMouseHover) {
+                    
+                    this.my_user.target[0] = localmouse[0];
+                    this.my_user.target[1] = localmouse[1];
+        
+                    var cursor_exit = this.is_cursor_on_exit();
+                    if(cursor_exit) this.my_user.next_room=cursor_exit.target;
+                    else this.my_user.next_room="";
+                    var msg = {content: this.my_user.target[0], userName:this.my_user.name, type:"movement"};
+                if(MYCLIENT.on_connect!=null) MYCLIENT.sendMessage(JSON.stringify(msg));
+                }
+            }
         }else if(e.type == "mousemove"){
     
         }else //mouseup
@@ -238,10 +275,18 @@ var MYAPP = {
         }
     },
 
+    receiveMSG: function( msg )
+    {
+        var parsedMsg = JSON.parse(msg);
+        if (parsedMsg.type = "text"){
+            WORLD.changeUserLastMSG(parsedMsg.userName, parsedMsg.content);
+        }
+    },
+
     onKey: function( e )
     {
 
 
         
-    }
+    },
 };

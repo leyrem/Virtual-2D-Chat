@@ -101,7 +101,7 @@ const MYCHAT = {
     MYCHAT.myUser = userName;
     
 
-    fetch("./public/world.json")
+    fetch("./world.json")
     .then(function(resp) {
             return resp.json();
         }).then(function(json) {
@@ -136,7 +136,7 @@ const MYCHAT = {
     // The full url used will be ws://localhost:1337/roomName+userName
     //server.connect( 'localhost:1337', roomName, userName);
     // server.connect('ecv-etic.upf.edu/node/9018', roomName, userName);
-    MYCLIENT.connect('localhost:8080', roomName, userName, password);
+    MYCLIENT.connect('ecv-etic.upf.edu/node/9018/ws', roomName, userName, password);
 
     //$(`#chat${MYCHAT.selected}_server_info`).html( 'Connecting...' );
 
@@ -155,7 +155,7 @@ const MYCHAT = {
         location.reload(); // Reload page
       }
     }
-    MYCLIENT.on_ready = function(id) {
+    MYCLIENT.on_ready = function(id, pos_server) {
       $('#chat-connected-msg-userName').html(`Your userName is: ${userName}`);
       $('#chat-connected-msg-userID').html(`Your userID is: ${id}`);
       MYCHAT.myUserID = id;
@@ -165,8 +165,13 @@ const MYCHAT = {
       MYCLIENT.on_user_disconnected = MYCHAT.onUserDisconnect;
       MYCLIENT.on_message = MYCHAT.onNewMessageReceived;
       MYCLIENT.on_close = MYCHAT.onClose;
+      // TODO: do thus on server ?
       MYAPP.my_user = new User(userName);
       MYAPP.my_user.id = id;
+      pos_server = parseInt(pos_server);
+      console.log("On ready pos: " + pos_server);
+      MYAPP.my_user.position = pos_server;
+      MYAPP.my_user.target[0] = pos_server;
       WORLD.addUser(MYAPP.my_user, MYAPP.current_room);
     };
     //MYCHAT.server = server;
@@ -189,7 +194,7 @@ const MYCHAT = {
     MYCHAT.sendSysMsg('User ' + userID + ' with user name: ' + userName + ',  connected!', userID, MYCHAT.currentTime());
     MYCHAT.addUserInForm(userName);
 
-    var new_user = new User("Leyre");
+    var new_user = new User(userName);
     new_user.id = userID;
     //MYAPP.current_room.addUser(new_user);
     WORLD.addUser(new_user, MYAPP.current_room);

@@ -9,7 +9,5 @@ Fer que quan cliques una exit el jugador té com a exit target aquella exit i qu
 // TODO
 - el estado de los dos clientes no es el mismo --> probad send room state on onTick
 - passwords --> Test redis en la web del ecv
-- guardar la posicion
 - burbujas
 - distancia
-- Cuando el usuario cambia de room, borrar los mensajes del chat de la habitación anterior del front

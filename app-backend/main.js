@@ -11,9 +11,10 @@ var queryString = require('querystring'),
             express = require('express');
 
 
+const app = express();
 
 // Init http server
-const serverH = http.createServer();
+const serverH = http.createServer(app);
 // Init websocket instance
 const wss = new WebSocketServer({ server: serverH });
 
@@ -51,7 +52,10 @@ wss.on('close', function(e) {
     DATABASE_MANAGER.quit();
 });
 
-serverH.listen( 8080 , function() {
+            //to handle static files, redirect to public folder
+app.use(express.static('../public'));
+
+serverH.listen( 9018 , function() {
     MYSERVER.init();
     MYSERVER.onReady();
     // Connect to DB 

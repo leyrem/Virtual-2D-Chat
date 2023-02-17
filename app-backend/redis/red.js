@@ -1,17 +1,25 @@
 const redis = require('redis');
+const {promisify} = require('util');
+
 
 var REDIS_CLIENT = {
   redis_client: null,
+  async_func: null,
 
   connect: async function()
   {
     try {
       // Asumming there is a redis server running locally
       this.redis_client = redis.createClient();
-      await this.redis_client.connect();
-      console.log("[REDIS] Connected to Redis!");
+      //this.redis_client = redis.createClient();
+      this.redis_client.on('connect', function() {
+          console.log("[REDIS] Connected to Redis!");
+          this.async_func = promisify(REDIS_CLIENT.redis_client.get).bind(REDIS_CLIENT.redis_client);
+      });
+      //await this.redis_client.connect();
+      
     } catch(err) {
-      console.error(err);
+      console.error("[REDIS] Error occurred while connecting to Redis local server: " + err);
     }
     
   },
@@ -29,7 +37,15 @@ var REDIS_CLIENT = {
   get_value_from_key: async function ( key )
   {
     try {
-      const val = await this.redis_client.get(key);
+      const val = await this.redis_client.async_func(key);
+
+      //load
+      // await this.redis_client.get(key, function(err,v) {
+      //   console.log('name is ' + v);
+      //   console.log("err is " + err)
+      // });
+
+
       console.log("[REDIS] Got val: " +  val + ", for key: " + key);
       return val;
     } catch (e) {

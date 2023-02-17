@@ -19,8 +19,9 @@ function User( name )
     this.position = 0;
     this.facing = FACING_FRONT;
     this.animation = "idle";
-    this.avatar = "spritesheet.png";
+    this.avatar = "images/spritesheet.png";
     this.target = [0,0];
+    this.lastMsg = {content: "", timeStamp: 0};
 
 }
 
@@ -29,6 +30,7 @@ User.prototype.fromJSON = function( json )
     for(var i in json)
     {
         this[i] = json[i]; // update every variable in the User instance
+        console.log()
     }
 }
 
@@ -66,7 +68,6 @@ var WORLD = {
     rooms: {},
     users: {},
     users_by_id: {},
-    something: null,
 
     createRoom: function( name, url , data)
     {
@@ -97,7 +98,6 @@ var WORLD = {
         new_room.addUser(user);
     },
     changeUserTarget: function(user, target){
-        console.log(target);
         user.target=[target,0];
         console.log(user);
         this.users[user.name] = user;
@@ -122,6 +122,12 @@ var WORLD = {
         }
         this.last_id = json.last_id;
         this.default_room = json.default_room;
+    },
+
+    changeUserLastMSG: function(userName, msgContent){
+        var user = this.users[userName];
+        user.lastMsg = {content:msgContent, timeStamp: Date.now()/1000};
+        this.users[userName] = user;
     },
 };
 

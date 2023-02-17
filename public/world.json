@@ -6,7 +6,7 @@
         "desert": {
             "id": 0,
             "name": "desert",
-            "url": "background.png",
+            "url": "images/background.png",
             "offset": [0, 0],
             "people": [],
             "range": [-100,100],
@@ -32,7 +32,7 @@
         "oasis": {
             "id": 1,
             "name": "oasis",
-            "url": "oasis.png",
+            "url": "images/oasis.png",
             "offset": [0, -70],
             "people": [],
             "range": [-100, 100],
